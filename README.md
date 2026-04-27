@@ -1,118 +1,148 @@
-# Playto Payout Engine
+````markdown
+# 💸 Playto Payout Engine
 
-A minimal monorepo for Indian merchants: collect USD, withdraw to INR (demo). The backend is **Django + DRF + Celery + PostgreSQL**; the frontend is **React + Vite + Tailwind**.
+[![Python](https://img.shields.io/badge/Backend-Django_5.0-092E20?logo=django)](https://www.djangoproject.com/)
+[![React](https://img.shields.io/badge/Frontend-React_18-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL_18-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Celery](https://img.shields.io/badge/Workers-Celery-37814A?logo=celery)](https://docs.celeryq.dev/)
 
-**Live URL (fill in for your deploy):** `https://playto-payout.example.com`
+A high-performance monorepo designed for Indian merchants to collect international payments in **USD** and withdraw locally in **INR**. Built with a focus on strict financial integrity, including ledger atomicity, concurrency locks, and request idempotency.
 
-## Prerequisites
+---
 
-- **Docker** and Docker Compose, **or**
-- **Python 3.11+**, **Node 20+**, **PostgreSQL 15+**, **Redis 7+**
+## 🚀 Core Features
 
-## Setup with Docker
+- **Ledger-Based Accounting:** Double-entry-inspired ledger for precise balance tracking.
+- **Atomic Transactions:** Prevents double-spending using database-level `SELECT FOR UPDATE` locks.
+- **Idempotency:** Custom middleware ensuring duplicate API requests don't result in duplicate payouts.
+- **Asynchronous Processing:** Celery-driven state machine for payout lifecycle management.
+- **Modern Dashboard:** Clean React + Tailwind UI for merchant operations.
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Django, Django REST Framework (DRF) |
+| **Frontend** | React, Vite, Tailwind CSS |
+| **Database** | PostgreSQL (Production) / SQLite (Local Dev) |
+| **Task Queue** | Celery + Redis |
+| **Infrastructure** | Docker, Docker Compose |
+
+---
+
+## 📦 Quick Start (Docker)
+
+The fastest way to get the engine running:
 
 ```bash
+# 1. Clone and launch
 docker compose up --build
-```
 
-- API: `http://localhost:8000`
-- Vite: `http://localhost:5173` (set `VITE_API_BASE` to `http://localhost:8000` in `docker-compose.yml` for the browser)
-- Seed merchants and print auth tokens (from `backend`):
-
-```bash
+# 2. Seed data & generate auth tokens (In a new terminal)
 docker compose exec web python manage.py seed_data
-```
+````
 
-Use **Authorization: Token &lt;key&gt;** in the client or paste the token in the web UI.
+* **Frontend:** [http://localhost:5173](http://localhost:5173)
+* **API Root:** [http://localhost:8000](http://localhost:8000)
 
-## Manual setup (no Docker)
+---
 
-1. **PostgreSQL** and **Redis** running locally.
-2. **Backend**
-   - `cd backend && python -m venv .venv` (activate the venv)
-   - `pip install -r requirements.txt`
-3. **Frontend**  
-   - `cd frontend && npm install`
+## 🔧 Manual Setup (No Docker)
 
-### Environment variables (backend)
+### 1. Prerequisites
 
-| Variable | Description |
-|----------|-------------|
-| `DJANGO_SECRET_KEY` | Django secret |
-| `DJANGO_DEBUG` | `1` or `0` |
-| `DJANGO_ALLOWED_HOSTS` | Comma-separated hosts |
-| `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | DB connection |
-| `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND` | Redis URLs |
-| `SQLITE_DEBUG` | Set to `1` to use SQLite for local *dev only* (not for production or concurrency) |
+* Python 3.11+ & Node 20+
+* Redis (Running locally on default port 6379)
 
-**Frontend (optional, Vite):**
-
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_BASE` | e.g. `http://127.0.0.1:8000` — API root in the **browser** |
+### 2. Backend Setup
 
 ```bash
 cd backend
-# export variables or use a .env loader
+python -m venv .venv
+# Windows: .\.venv\Scripts\activate | Unix: source .venv/bin/activate
+pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed_data
 python manage.py runserver
 ```
 
-In another shell:
+### 3. Workers & Beats
 
 ```bash
-cd backend
+# In separate terminal tabs
 celery -A celeryconfig worker -l info
 celery -A celeryconfig beat -l info
 ```
 
+### 4. Frontend Setup
+
 ```bash
 cd frontend
-set VITE_API_BASE=http://127.0.0.1:8000
+npm install
+# Set API location
+set VITE_API_BASE=[http://127.0.0.1:8000](http://127.0.0.1:8000)
 npm run dev
 ```
 
-## Tests
+---
+
+## 🧪 Testing Concurrency & Idempotency
+
+To verify the engine handles "double-click" payout attempts correctly:
 
 ```bash
-cd backend
-# Optional: use Postgres for the same DB the app uses; SQLite is used if SQLITE_DEBUG=1
-set SQLITE_DEBUG=1
-python manage.py test tests payouts.tests
-# or: pytest
-```
+# Set test environment
+export API=[http://127.0.0.1:8000](http://127.0.0.1:8000)
+export T=YOUR_TOKEN_HERE
 
-Graded cases live in `backend/tests/test_concurrency.py` and `backend/tests/test_idempotency.py`.
-
-## Demo: two “simultaneous” payout attempts (curl)
-
-Replace `TOKEN` and ensure one merchant has only **100 INR** of spendable headroom, then run two requests at once (e.g. Git Bash, WSL, or two terminals):
-
-```bash
-export API=http://127.0.0.1:8000
-export T=TOKEN_FROM_seed_data
+# Fire two simultaneous 60.00 INR requests
 curl -s -o /dev/null -w "%{http_code}\n" -X POST "$API/api/v1/payouts/" \
   -H "Authorization: Token $T" -H "Content-Type: application/json" \
-  -H "Idempotency-Key: 11111111-1111-1111-1111-111111111111" \
-  -d '{"amount_paise":6000,"bank_account_id":"HDFC_1"}' &
+  -H "Idempotency-Key: key-1" -d '{"amount_paise":6000,"bank_account_id":"HDFC_1"}' &
+
 curl -s -o /dev/null -w "%{http_code}\n" -X POST "$API/api/v1/payouts/" \
   -H "Authorization: Token $T" -H "Content-Type: application/json" \
-  -H "Idempotency-Key: 22222222-2222-2222-2222-222222222222" \
-  -d '{"amount_paise":6000,"bank_account_id":"HDFC_1"}' &
+  -H "Idempotency-Key: key-2" -d '{"amount_paise":6000,"bank_account_id":"HDFC_1"}' &
 wait
 ```
 
-You should see one `201` and one `400` (insufficient balance) when the initial balance is 10000 paise and each request is 6000.
+*Expected: One `201 Created` and one `400 Bad Request` (Insufficient Balance).*
 
-## Project layout
+---
 
-- `backend/config` — Django settings, URLs, WSGI, ASGI
-- `backend/merchants` — `Merchant` model, `seed_data`
-- `backend/ledger` — `LedgerEntry`, balance helpers
-- `backend/payouts` — `PayoutRequest`, API, tasks, state machine
-- `backend/idempotency` — `IdempotencyKey`, middleware, decorator hook
-- `backend/celeryconfig.py` — Celery app
-- `frontend/src` — dashboard UI
+## 📂 Project Structure
 
-See `EXPLAINER.md` for the evaluator-focused walkthrough of ledger queries, locks, idempotency, and the state machine.
+```text
+├── backend/
+│   ├── config/          # Project settings & URL routing
+│   ├── merchants/       # Merchant profiles & auth
+│   ├── ledger/          # Financial logging & balance logic
+│   ├── payouts/         # Payout state machine & DRF Views
+│   ├── idempotency/     # Request deduplication logic
+│   └── tests/           # Concurrency & logic test suites
+├── frontend/
+│   ├── src/             # React components & hooks
+│   └── public/          # Static assets
+└── docker-compose.yml   # Multi-container orchestration
+```
+
+---
+
+## 📋 Environment Variables (Backend)
+
+| Key                 | Default                    | Note                                        |
+| :------------------ | :------------------------- | :------------------------------------------ |
+| `DJANGO_DEBUG`      | `1`                        | Set to `0` for production                   |
+| `SQLITE_DEBUG`      | `0`                        | Set to `1` to bypass Postgres for local dev |
+| `CELERY_BROKER_URL` | `redis://localhost:6379/0` | Path to Redis                               |
+
+---
+
+### 📖 Explainer
+
+For a deep dive into the architecture (Ledger queries, Database locking strategies, and Payout states), please refer to [EXPLAINER.md](./EXPLAINER.md).
+
+```
+```
