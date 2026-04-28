@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-key-change-in-production")
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",") if h]
+CSRF_TRUSTED_ORIGINS = ["https://playtopayment-production.up.railway.app"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -96,6 +97,10 @@ from corsheaders.defaults import default_headers  # noqa: E402
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "idempotency-key",
 ]
+
+# Replace the URL below with your actual Railway domain 
+# (e.g., 'your-app-name.up.railway.app')
+ALLOWED_HOSTS = ['https://playtopayment-production.up.railway.app/', '127.0.0.1', 'localhost']
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
