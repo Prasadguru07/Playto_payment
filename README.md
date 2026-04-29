@@ -11,6 +11,7 @@ A high-performance monorepo designed for Indian merchants to collect internation
 
 ## Loom video: https://www.loom.com/share/305b4c95b40043f2bcc57a4844c866ff
 
+---
 
 ## 🚀 Core Features
 
