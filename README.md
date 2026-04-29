@@ -7,6 +7,13 @@
 
 A high-performance monorepo designed for Indian merchants to collect international payments in **USD** and withdraw locally in **INR**. Built with a focus on strict financial integrity, including ledger atomicity, concurrency locks, and request idempotency.
 
+
+---
+
+## Demo: https://github.com/user-attachments/assets/d49422a7-51c5-4b5f-9ba2-59f9230080e5
+
+---
+
 ---
 
 ## Loom video: https://www.loom.com/share/305b4c95b40043f2bcc57a4844c866ff
