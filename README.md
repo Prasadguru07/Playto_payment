@@ -10,7 +10,10 @@ A high-performance monorepo designed for Indian merchants to collect internation
 
 ---
 
-## Demo: https://github.com/user-attachments/assets/d49422a7-51c5-4b5f-9ba2-59f9230080e5
+### 🎥 Live Project Demo
+
+<video src="https://github.com/user-attachments/assets/d49422a7-51c5-4b5f-9ba2-59f9230080e5" controls="controls" style="max-width: 100%; height: auto;">
+</video>
 
 ---
 
