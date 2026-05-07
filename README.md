@@ -17,50 +17,96 @@ A high-performance monorepo designed for Indian merchants to collect internation
 
 ---
 ---
-#### System Architecture
-
+### 🏗️ System Architecture
 ```mermaid
 graph TB
-    subgraph Client_Layer [Frontend - React/Vite/Tailwind]
-        A[Merchant Dashboard] --> B[API Client]
+
+    %% =========================
+    %% CLIENT LAYER
+    %% =========================
+    subgraph Client_Layer [🌐 Frontend Layer — React / Vite / Tailwind]
+        A[Merchant Dashboard]
+        B[Admin Operations Panel]
+        C[Analytics & Settlement UI]
+        A --> D[Secure API Client]
+        B --> D
+        C --> D
     end
 
-    subgraph Security_Gate [Middleware & Security]
-        B --> C[Idempotency Layer]
-        C --> D[JWT Auth / Permissioning]
+    %% =========================
+    %% SECURITY LAYER
+    %% =========================
+    subgraph Security_Gateway [🛡️ API Gateway & Security Layer]
+        D --> E[Rate Limiter]
+        E --> F[Idempotency Middleware]
+        F --> G[JWT Auth + RBAC]
+        G --> H[Request Validation Engine]
     end
 
-    subgraph Application_Layer [Backend - Django 5.0 Monorepo]
-        D --> E[Payout API Engine]
-        
-        subgraph Transaction_Logic [Atomic Transaction Handler]
-            E --> F{Select for Update Lock}
-            F --> G[Double-Entry Ledger Service]
+    %% =========================
+    %% APPLICATION LAYER
+    %% =========================
+    subgraph Application_Layer [⚙️ Backend — Django 5 / DRF Monorepo]
+
+        H --> I[Payout & FX Conversion API]
+
+        subgraph Payment_Engine [💸 Multi-Currency Payment Engine]
+            I --> J[USD / EUR / GBP Collection]
+            J --> K[FX Conversion Service]
+            K --> L[INR Settlement Engine]
         end
-        
-        subgraph Async_Workers [Celery & Redis]
-            E --> H[Payout State Machine]
-            H --> I[Status: PENDING]
-            I --> J[Status: PROCESSING]
-            J --> K[Status: COMPLETED/FAILED]
+
+        subgraph Transaction_Core [🏦 Financial Integrity Core]
+            I --> M{SELECT FOR UPDATE Lock}
+            M --> N[Double-Entry Ledger Service]
+            N --> O[Balance Reconciliation]
+        end
+
+        subgraph Async_Workers [⚡ Celery Workers + Redis Queue]
+            I --> P[Payout State Machine]
+            P --> Q[PENDING]
+            Q --> R[PROCESSING]
+            R --> S[COMPLETED]
+            R --> T[FAILED]
+            T --> U[Retry & Recovery Engine]
+        end
+
+        subgraph Monitoring [📈 Observability & Monitoring]
+            I --> V[Structured Logging]
+            V --> W[Metrics & Alerts]
+            W --> X[Audit Trail Service]
         end
     end
 
-    subgraph Data_Layer [Persistence & Cache]
-        G --> L[(PostgreSQL)]
-        H --> M[(Redis Cache)]
+    %% =========================
+    %% DATA LAYER
+    %% =========================
+    subgraph Data_Layer [🗄️ Persistence & Cache Layer]
+        N --> Y[(PostgreSQL - Production)]
+        N --> Z[(SQLite - Local Dev)]
+        P --> AA[(Redis Cache & Broker)]
     end
 
-    subgraph External_Integrations [External Services]
-        J --> N[International Payment Gateway]
-        K --> O[Indian Banking APIs - INR Payout]
+    %% =========================
+    %% EXTERNAL SERVICES
+    %% =========================
+    subgraph External_Integrations [🌍 Banking & Payment Integrations]
+        J --> AB[Stripe / Wise / PayPal APIs]
+        L --> AC[Indian Banking APIs]
+        L --> AD[UPI / IMPS / NEFT]
+        X --> AE[Webhook Delivery]
     end
 
-    style G fill:#f96,stroke:#333,stroke-width:2px
-    style F fill:#dfd,stroke:#333,stroke-width:2px
-    style H fill:#dff,stroke:#333,stroke-width:2px
+    %% =========================
+    %% STYLING
+    %% =========================
+    style N fill:#ffb86c,stroke:#1f2937,stroke-width:2px,color:#111
+    style M fill:#50fa7b,stroke:#1f2937,stroke-width:2px,color:#111
+    style P fill:#8be9fd,stroke:#1f2937,stroke-width:2px,color:#111
+    style K fill:#bd93f9,stroke:#1f2937,stroke-width:2px,color:#111
+    style L fill:#f1fa8c,stroke:#1f2937,stroke-width:2px,color:#111
+    style Y fill:#ff79c6,stroke:#1f2937,stroke-width:2px,color:#111
 ```
-
 ---
 ## 🚀 Core Features
 
