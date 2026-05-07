@@ -16,7 +16,50 @@ A high-performance monorepo designed for Indian merchants to collect internation
 </video>
 
 ---
+---
+```mermaid
+graph TB
+    subgraph Client_Layer [Frontend - React/Vite/Tailwind]
+        A[Merchant Dashboard] --> B[API Client]
+    end
 
+    subgraph Security_Gate [Middleware & Security]
+        B --> C[Idempotency Layer]
+        C --> D[JWT Auth / Permissioning]
+    end
+
+    subgraph Application_Layer [Backend - Django 5.0 Monorepo]
+        D --> E[Payout API Engine]
+        
+        subgraph Transaction_Logic [Atomic Transaction Handler]
+            E --> F{Select for Update Lock}
+            F --> G[Double-Entry Ledger Service]
+        end
+        
+        subgraph Async_Workers [Celery & Redis]
+            E --> H[Payout State Machine]
+            H --> I[Status: PENDING]
+            I --> J[Status: PROCESSING]
+            J --> K[Status: COMPLETED/FAILED]
+        end
+    end
+
+    subgraph Data_Layer [Persistence & Cache]
+        G --> L[(PostgreSQL)]
+        H --> M[(Redis Cache)]
+    end
+
+    subgraph External_Integrations [External Services]
+        J --> N[International Payment Gateway]
+        K --> O[Indian Banking APIs - INR Payout]
+    end
+
+    style G fill:#f96,stroke:#333,stroke-width:2px
+    style F fill:#dfd,stroke:#333,stroke-width:2px
+    style H fill:#dff,stroke:#333,stroke-width:2px
+```
+
+---
 ## 🚀 Core Features
 
 - **Ledger-Based Accounting:** Double-entry-inspired ledger for precise balance tracking.
