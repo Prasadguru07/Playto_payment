@@ -17,6 +17,8 @@ A high-performance monorepo designed for Indian merchants to collect internation
 
 ---
 ---
+#### System Architecture
+
 ```mermaid
 graph TB
     subgraph Client_Layer [Frontend - React/Vite/Tailwind]
